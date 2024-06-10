@@ -67,7 +67,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
          glTranslated(0, -1, -8);
          glRotatef((float)t*50.0f, 0.0f, 1.0f, 0.0f);
          //glPointSize(5);
-         glScaled(1.0/object.size, 1.0/object.size, 1./object.size);
+         glScaled(2.0/object.size, 2.0/object.size, 2./object.size);
          glColor3d(0.35 + 0.30*Math.sin(t), 0.93 + 0.24*Math.sin(t), 0.73 + 0.22*Math.sin(t));
          POGL.renderObject(object);
          Display.update();
@@ -76,6 +76,6 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
 
    public static void main(String[] args) throws LWJGLException {
       new ObjektLadenUndDrehen("Obejekt drehen", 500, 500,
-            "objects/weirdThingCentered.obj", 10).start();
+            "objects/firefly.obj", 10).start();
    }
 }
