@@ -719,4 +719,20 @@ public class POGL {
 			}
 		glEnd();
 	}
+	
+	public static void renderOval(float x, float y, float z, float step, float radiusX, float radiusY) {
+	    glBegin(GL_TRIANGLES);
+	    double angleStep = 360.0 / step;
+	    for (double angle = 0; angle < 360; angle += angleStep) {
+	        double currentX = x + radiusX * Math.cos(Math.toRadians(angle));
+	        double currentY = y + radiusY * Math.sin(Math.toRadians(angle));
+	        double nextX = x + radiusX * Math.cos(Math.toRadians(angle + angleStep));
+	        double nextY = y + radiusY * Math.sin(Math.toRadians(angle + angleStep));
+
+	        glVertex3d(x, y, z);
+	        glVertex3d(currentX, currentY, z);
+	        glVertex3d(nextX, nextY, z);
+	    }
+	    glEnd();
+	}
 }
