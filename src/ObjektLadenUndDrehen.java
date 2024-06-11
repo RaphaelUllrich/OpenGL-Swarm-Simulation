@@ -1,30 +1,23 @@
-import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
-import static org.lwjgl.opengl.GL11.GL_FILL;
-import static org.lwjgl.opengl.GL11.glColor3d;
-import static org.lwjgl.opengl.GL11.glFrustum;
-import static org.lwjgl.opengl.GL11.glLoadIdentity;
-import static org.lwjgl.opengl.GL11.glPolygonMode;
-import static org.lwjgl.opengl.GL11.glRotatef;
-import static org.lwjgl.opengl.GL11.glScaled;
-import static org.lwjgl.opengl.GL11.glTranslated;
-
+import static org.lwjgl.opengl.GL11.*;
 import java.awt.Canvas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
-import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 
 public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
+    List<Agent> agents;
     Model object = null;
     boolean useKugel = false;
+    Random random = new Random();
 
     public ObjektLadenUndDrehen(String title, int width, int height, String fileName, float size, boolean useKugel) {
         super(title, width, height);
@@ -35,15 +28,24 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Canvas c = new Canvas();
         f.add(c);
-        // Breite des Anfangsfensters anpassen
         f.setBounds(100, 100, 700, 600);
         f.setLocationRelativeTo(null);
         f.setVisible(true);
 
         if (!useKugel) {
             loadObject(fileName);
-            object.size = size;
+            if (object != null) {
+                object.size = size;
+            }
         }
+
+        agents = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            Vektor2D position = new Vektor2D(random.nextDouble() * 6 - 3, random.nextDouble() * 6 - 3);
+            Vektor2D velocity = new Vektor2D(random.nextDouble() * 0.2 - 0.1, random.nextDouble() * 0.2 - 0.1);
+            agents.add(new Agent(i, position, velocity));
+        }
+
         initDisplay(c);
     }
 
@@ -70,21 +72,21 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             glLoadIdentity();
             glFrustum(-1, 1, -1, 1, 4, 10);
             glTranslated(0, -1, -8);
-            glRotatef((float) t * 50.0f, 0.0f, 1.0f, 0.0f);
 
-            if (!useKugel) {
-                glScaled(2.0 / object.size, 2.0 / object.size, 2.0 / object.size);
-            }
-            // Farben von Gelb zu Orange ändern
-            double red = 1.0;
-            double green = 0.8 + 0.2 * Math.sin(t);
-            double blue = 0.0;
-            glColor3d(red, green, blue);
+            for (Agent agent : agents) {
+                agent.flock(agents);
+                agent.update();
 
-            if (useKugel) {
-                POGL.renderEgg(12);
-            } else {
-                POGL.renderObject(object);
+                glPushMatrix();
+                glTranslated(agent.position.x, agent.position.y, 0);
+                glRotatef((float) Math.toDegrees(Math.atan2(agent.velocity.y, agent.velocity.x)), 0, 0, 1);
+                glScaled(0.1, 0.1, 0.1);
+                if (useKugel) {
+                    POGL.renderEgg(8);
+                } else if (object != null) {
+                    POGL.renderObject(object);
+                }
+                glPopMatrix();
             }
 
             Display.update();
@@ -92,8 +94,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     }
 
     public static void main(String[] args) {
-        // Create the selection window
-    	JFrame selectionFrame = new JFrame("Wähle Objekt oder Kugel");
+        JFrame selectionFrame = new JFrame("Wähle Objekt oder Kugel");
         selectionFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         selectionFrame.setSize(490, 110);
         selectionFrame.setLocationRelativeTo(null);
