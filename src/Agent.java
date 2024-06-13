@@ -145,9 +145,9 @@ public class Agent {
     }
 
     public void flock(List<Agent> agents) {
-        Vektor2D sep = separation(agents, 0.4).mult(0.4); // Increase separation weight
+        Vektor2D sep = separation(agents, 0.2).mult(0.4); // Increase separation weight
         Vektor2D ali = alignment(agents, 1.0).mult(1.0);
-        Vektor2D coh = cohesion(agents, 10.5).mult(1.9); // Reduce cohesion weight
+        Vektor2D coh = cohesion(agents, 50.5).mult(1.9); // Reduce cohesion weight
 
         applyForce(sep);
         applyForce(ali);
