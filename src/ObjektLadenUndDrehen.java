@@ -40,8 +40,8 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         }
 
         agents = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
-            Vektor2D position = new Vektor2D(random.nextDouble() * 2 - 1, random.nextDouble() * 2 - 1);
+        for (int i = 0; i < 40; i++) {
+            Vektor2D position = new Vektor2D(random.nextDouble() * 2 - 1, random.nextDouble() * 2 - 0);
             Vektor2D velocity = new Vektor2D(random.nextDouble() * 0.002 - 0.001, random.nextDouble() * 0.002 - 0.001);
             agents.add(new Agent(i, position, velocity));
         }
