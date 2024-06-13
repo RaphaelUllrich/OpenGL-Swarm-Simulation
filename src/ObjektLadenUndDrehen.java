@@ -12,12 +12,14 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.lwjgl.opengl.Display;
+import org.lwjgl.input.Mouse;
 
 public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     List<Agent> agents;
     Model object = null;
     boolean useKugel = false;
     Random random = new Random();
+    List<Vektor2D> clickPositions;  // Liste für die Klickpositionen
 
     public ObjektLadenUndDrehen(String title, int width, int height, String fileName, float size, boolean useKugel) {
         super(title, width, height);
@@ -46,6 +48,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             agents.add(new Agent(i, position, velocity));
         }
 
+        clickPositions = new ArrayList<>();  // Initialisiere die Liste der Klickpositionen
         initDisplay(c);
     }
 
@@ -81,7 +84,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 glTranslated(agent.position.x, agent.position.y, 0);
                 glRotatef((float) Math.toDegrees(Math.atan2(agent.velocity.y, agent.velocity.x)), 0, 0, 1);
                 glScaled(0.03, 0.03, 0.03); // Make fireflies smaller
-             // Farben von Gelb zu Orange ändern
+                // Farben von Gelb zu Orange ändern
                 double red = 1.0;
                 double green = 0.8 + 0.2 * Math.sin(t);
                 double blue = 0.0;
@@ -91,6 +94,32 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 } else if (object != null) {
                     POGL.renderObject(object);
                 }
+                glPopMatrix();
+            }
+
+            if (Mouse.isButtonDown(0)) {
+            	System.out.println("Cool");
+                int mouseX = Mouse.getX();
+                int mouseY = Mouse.getY();
+                // Transformiere Mauskoordinaten in Weltkoordinaten
+                float worldX = (float) (mouseX / (double) Display.getWidth() * 2 - 1);
+                float worldY = (float) ((Display.getHeight() - mouseY) / (double) Display.getHeight() * 2 - 1); // Anpassung für Y-Koordinate
+                Vektor2D target = new Vektor2D(worldX, worldY);
+
+                for (Agent agent : agents) {
+                    agent.moveToTarget(target);
+                }
+
+                clickPositions.add(target);  // Speichere die Klickposition
+            }
+
+            // Rendern der Klickpositionen
+            glColor3d(1.0, 0.0, 0.0);  // Rot für die Klickpositionen
+            for (Vektor2D clickPosition : clickPositions) {
+                glPushMatrix();
+                glTranslated(clickPosition.x, clickPosition.y, 0);
+                glScaled(0.05, 0.05, 0.05);  // Skaliere den Punkt
+                POGL.renderEgg(8);  // Verwende das Ei als Punkt
                 glPopMatrix();
             }
 
