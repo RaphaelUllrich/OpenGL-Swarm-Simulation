@@ -6,32 +6,67 @@ public class Agent {
     public Vektor2D velocity;
     public Vektor2D acceleration;
     public int id;
-    private static final double MAX_SPEED = 0.0002; // Lower value for slower movement
-    private static final double MAX_FORCE = 0.5; // Lower value for slower movement
+    private static final double MAX_SPEED = 0.0001; // Lower value for slower movement
+    private static final double MAX_FORCE = 0.05; // Lower value for slower movement
     private static final Random random = new Random();
+    private static final PerlinNoise perlin = new PerlinNoise();
+    private double timeOffset;
 
     public Agent(int id, Vektor2D position, Vektor2D velocity) {
         this.id = id;
         this.position = position;
         this.velocity = velocity;
         this.acceleration = new Vektor2D();
+        this.timeOffset = random.nextDouble() * 1000; // Random offset for each agent
     }
 
     public void applyForce(Vektor2D force) {
         acceleration.add(force);
     }
 
-    public void update() {
+    public void update(double t) {
         velocity.add(acceleration);
         velocity.truncate(MAX_SPEED); // Limit velocity to MAX_SPEED
         position.add(velocity);
         acceleration.mult(0);
+
+        // Apply Perlin noise to simulate smooth random vertical movement
+        double noise = perlin.noise(position.x, position.y, t + timeOffset);
+        double verticalOffset = (noise - 0.5) * 0.00007; // Adjust the scale of vertical movement
+        
+        // Apply sine wave to create oscillation
+        double sineWave = Math.sin((t + timeOffset) * 0.8) * 0.0001; // Adjust the amplitude and frequency of the sine wave
+
+        position.y += verticalOffset + sineWave;
+        
+        applyBoundarySteering();
 
         // Wrap around screen boundaries
         if (position.x > 3) position.x = -3;
         if (position.x < -3) position.x = 3;
         if (position.y > 3) position.y = -3;
         if (position.y < -3) position.y = 3;
+    }
+    
+    private void applyBoundarySteering() {
+        double boundaryDistance = 1.0; // Distance from boundary to start steering
+        double turnStrength = 0.05; // Strength of the turn force
+
+        Vektor2D steer = new Vektor2D();
+
+        if (position.x > 3 - boundaryDistance) {
+            steer.x = -turnStrength;
+        } else if (position.x < -3 + boundaryDistance) {
+            steer.x = turnStrength;
+        }
+
+        if (position.y > 3 - boundaryDistance) {
+            steer.y = -turnStrength;
+        } else if (position.y < -3 + boundaryDistance) {
+            steer.y = turnStrength;
+        }
+
+        applyForce(steer);
     }
 
     public Vektor2D separation(List<Agent> agents, double desiredSeparation) {
@@ -109,9 +144,9 @@ public class Agent {
     }
 
     public void flock(List<Agent> agents) {
-        Vektor2D sep = separation(agents, 25).mult(1.5); // Increase separation weight
-        Vektor2D ali = alignment(agents, 50).mult(1.0);
-        Vektor2D coh = cohesion(agents, 50).mult(0.5); // Reduce cohesion weight
+        Vektor2D sep = separation(agents, 0.5).mult(1.5); // Increase separation weight
+        Vektor2D ali = alignment(agents, 1.0).mult(1.0);
+        Vektor2D coh = cohesion(agents, 1.0).mult(0.5); // Reduce cohesion weight
 
         applyForce(sep);
         applyForce(ali);

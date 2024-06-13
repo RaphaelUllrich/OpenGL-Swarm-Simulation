@@ -41,8 +41,8 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
 
         agents = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
-            Vektor2D position = new Vektor2D(random.nextDouble() * 6 - 3, random.nextDouble() * 6 - 3);
-            Vektor2D velocity = new Vektor2D(random.nextDouble() * 0.2 - 0.1, random.nextDouble() * 0.2 - 0.1);
+            Vektor2D position = new Vektor2D(random.nextDouble() * 2 - 1, random.nextDouble() * 2 - 1);
+            Vektor2D velocity = new Vektor2D(random.nextDouble() * 0.002 - 0.001, random.nextDouble() * 0.002 - 0.001);
             agents.add(new Agent(i, position, velocity));
         }
 
@@ -75,12 +75,17 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
 
             for (Agent agent : agents) {
                 agent.flock(agents);
-                agent.update();
+                agent.update(t);
 
                 glPushMatrix();
                 glTranslated(agent.position.x, agent.position.y, 0);
                 glRotatef((float) Math.toDegrees(Math.atan2(agent.velocity.y, agent.velocity.x)), 0, 0, 1);
-                glScaled(0.1, 0.1, 0.1);
+                glScaled(0.03, 0.03, 0.03); // Make fireflies smaller
+             // Farben von Gelb zu Orange ändern
+                double red = 1.0;
+                double green = 0.8 + 0.2 * Math.sin(t);
+                double blue = 0.0;
+                glColor3d(red, green, blue);
                 if (useKugel) {
                     POGL.renderEgg(8);
                 } else if (object != null) {
