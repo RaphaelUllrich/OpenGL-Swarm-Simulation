@@ -2,6 +2,8 @@ import static org.lwjgl.opengl.GL11.*;
 import java.awt.Canvas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,6 +20,8 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     Model object = null;
     boolean useKugel = false;
     Random random = new Random();
+    Vektor2D target = null;
+    boolean targetSet = false;
 
     public ObjektLadenUndDrehen(String title, int width, int height, String fileName, float size, boolean useKugel) {
         super(title, width, height);
@@ -32,6 +36,19 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         f.setLocationRelativeTo(null);
         f.setVisible(true);
 
+        c.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int x = e.getX();
+                int y = e.getY();
+                double normX = (2.0 * x / c.getWidth() - 1) * 3; // Normalize to OpenGL coordinates
+                double normY = (1 - 2.0 * y / c.getHeight()) * 3; // Normalize to OpenGL coordinates
+                target = new Vektor2D(normX, normY);
+                targetSet = true;
+                System.out.println("Target set to: " + target);
+            }
+        });
+
         if (!useKugel) {
             loadObject(fileName);
             if (object != null) {
@@ -40,13 +57,15 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         }
 
         agents = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
-            Vektor2D position = new Vektor2D(random.nextDouble() * 2 - 1, random.nextDouble() * 2);
+        for (int i = 0; i < 40; i++) {
+            Vektor2D position = new Vektor2D(random.nextDouble() * 2 - 1, random.nextDouble() * 2 - 1);
             Vektor2D velocity = new Vektor2D(random.nextDouble() * 0.002 - 0.001, random.nextDouble() * 0.002 - 0.001);
             agents.add(new Agent(i, position, velocity));
         }
 
+       
         initDisplay(c);
+
     }
 
     public boolean loadObject(String fileName) {
@@ -74,14 +93,18 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             glTranslated(0, -1, -8);
 
             for (Agent agent : agents) {
-                agent.flock(agents);
+                if (targetSet) {
+                    agent.moveToTarget(target);
+                } else {
+                    agent.flock(agents);
+                }
                 agent.update(t);
 
                 glPushMatrix();
                 glTranslated(agent.position.x, agent.position.y, 0);
                 glRotatef((float) Math.toDegrees(Math.atan2(agent.velocity.y, agent.velocity.x)), 0, 0, 1);
                 glScaled(0.03, 0.03, 0.03); // Make fireflies smaller
-             // Farben von Gelb zu Orange ändern
+                // Farben von Gelb zu Orange ändern
                 double red = 1.0;
                 double green = 0.8 + 0.2 * Math.sin(t);
                 double blue = 0.0;
@@ -120,7 +143,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectionFrame.dispose();
-                new ObjektLadenUndDrehen("Objekt drehen", 500, 500, "objects/firefly.obj", 10, false).start();
+                new ObjektLadenUndDrehen("Objekt drehen", 500, 500, "objects/fireflyLow.obj", 10, false).start();
             }
         });
 

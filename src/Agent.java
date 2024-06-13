@@ -7,7 +7,7 @@ public class Agent {
     public Vektor2D acceleration;
     public int id;
     private static final double MAX_SPEED = 0.0000008; // Lower value for slower movement
-    private static final double MAX_FORCE = 0.05; // Lower value for slower movement
+    private static final double MAX_FORCE = 0.5; // Lower value for slower movement
     private static final Random random = new Random();
     private static final PerlinNoise perlin = new PerlinNoise();
     private double timeOffset;
