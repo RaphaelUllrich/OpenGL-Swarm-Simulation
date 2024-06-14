@@ -6,11 +6,12 @@ public class Agent {
     public Vektor2D velocity;
     public Vektor2D acceleration;
     public int id;
-    private static final double MAX_SPEED = 0.0000008; // Lower value for slower movement
-    private static final double MAX_FORCE = 0.5; // Lower value for slower movement
+    private static final double MAX_SPEED = 0.0002; // Lower value for slower movement
+    private static final double MAX_FORCE = 0.05; // Lower value for slower movement
     private static final Random random = new Random();
     private static final PerlinNoise perlin = new PerlinNoise();
     private double timeOffset;
+    private Vektor2D targetPosition; // Zielposition
 
     public Agent(int id, Vektor2D position, Vektor2D velocity) {
         this.id = id;
@@ -18,6 +19,7 @@ public class Agent {
         this.velocity = velocity;
         this.acceleration = new Vektor2D();
         this.timeOffset = random.nextDouble() * 1000; // Random offset for each agent
+        this.targetPosition = null; // Initialisiere Zielposition als null
     }
 
     public void applyForce(Vektor2D force) {
@@ -25,6 +27,11 @@ public class Agent {
     }
 
     public void update(double t) {
+        if (targetPosition != null) {
+            Vektor2D seekForce = (seek(targetPosition).mult(70));
+            applyForce(seekForce);
+        }
+
         velocity.add(acceleration);
         velocity.truncate(MAX_SPEED); // Limit velocity to MAX_SPEED
         position.add(velocity);
@@ -32,38 +39,40 @@ public class Agent {
 
         // Apply Perlin noise to simulate smooth random vertical movement
         double noise = perlin.noise(position.x, position.y, t + timeOffset);
-        double verticalOffset = (noise) * 0.00009; // Adjust the scale of vertical movement
-        double horizontalOffset = (noise) * 0.00009; // Adjust the scale of horizontal movement
+        double verticalOffset = (noise) * 0.000009; // Adjust the scale of vertical movement
+        double horizontalOffset = (noise) * 0.000009; // Adjust the scale of horizontal movement
         
         // Apply sine wave to create oscillation
         double sineWave = Math.sin((t + timeOffset) * 0.8) * 0.0001; // Adjust the amplitude and frequency of the sine wave
-        double sineWaveHorizontal = Math.sin((t + timeOffset) * 1.2) * 0.0001; // Adjust the amplitude and frequency of the sine wave
+        double sineWaveHorizontal = Math.sin((t + timeOffset) * 2.2) * 0.0001; // Adjust the amplitude and frequency of the sine wave
 
         position.y += verticalOffset + sineWave;
         position.x += horizontalOffset + sineWaveHorizontal;
         
         applyBoundarySteering();
 
-        // Wrap around screen boundaries
-
+        // Reset target position if reached
+        if (targetPosition != null && position.distanceTo(targetPosition) < 0.01) {
+            targetPosition = null;
+        }
     }
-    
+
     private void applyBoundarySteering() {
         double boundaryDistanceY = 0.0; // Distance from boundary to start steering
         double boundaryDistanceX = 0.0;
-        double turnStrength = 4.05; // Strength of the turn force
+        double turnStrength = 1.05; // Strength of the turn force
 
         Vektor2D steer = new Vektor2D();
 
-        if (position.x > 3 - boundaryDistanceX) {
+        if (position.x > 2 - boundaryDistanceX) {
             steer.x = -turnStrength;
-        } else if (position.x < -3 + boundaryDistanceX) {
+        } else if (position.x < -2 + boundaryDistanceX) {
             steer.x = turnStrength;
         }
 
         if (position.y > 3 - boundaryDistanceY) {
             steer.y = -turnStrength;
-        } else if (position.y < -3 + boundaryDistanceY) {
+        } else if (position.y < -2 + boundaryDistanceY) {
             steer.y = turnStrength;
         }
 
@@ -158,7 +167,6 @@ public class Agent {
     }
     
     public void moveToTarget(Vektor2D target) {
-        Vektor2D seekForce = seek(target);
-        applyForce(seekForce);
+        this.targetPosition = target;
     }
 }

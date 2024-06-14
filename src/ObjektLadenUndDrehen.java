@@ -97,14 +97,19 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 glPopMatrix();
             }
 
+            //Punkt Zeichnen und target setzen
             if (Mouse.isButtonDown(0)) {
-            	System.out.println("Cool");
+            	//System.out.println("Cool");
                 int mouseX = Mouse.getX();
                 int mouseY = Mouse.getY();
+                System.out.println("  Mouse X-Pos: " + mouseX);
+                System.out.println("  Mouse Y-Pos: " + mouseY);
                 // Transformiere Mauskoordinaten in Weltkoordinaten
-                float worldX = (float) (mouseX / (double) Display.getWidth() * 2 - 1);
-                float worldY = (float) ((Display.getHeight() - mouseY) / (double) Display.getHeight() * 2 - 1); // Anpassung für Y-Koordinate
-                Vektor2D target = new Vektor2D(worldX, worldY);
+                float worldX = (float) (mouseX / (double) Display.getWidth() * 4 - 2);
+                float worldY = (float) ((Display.getHeight() - mouseY) / (double) Display.getHeight() * 4 - 2); // Anpassung für Y-Koordinate
+                Vektor2D target = new Vektor2D(worldX, -worldY+1);
+                System.out.println("World X-Pos: " + worldX);
+                System.out.println("World Y-Pos: " + worldY);
 
                 for (Agent agent : agents) {
                     agent.moveToTarget(target);

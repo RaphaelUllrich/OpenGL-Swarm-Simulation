@@ -106,6 +106,12 @@ public class Vektor2D {
     public void show() {
         System.out.println(toString());
     }
+    
+    public double distanceTo(Vektor2D vec) {
+        double dx = this.x - vec.x;
+        double dy = this.y - vec.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
 
     public static void main(String[] args) {
         Vektor2D a = new Vektor2D(4, 3);
