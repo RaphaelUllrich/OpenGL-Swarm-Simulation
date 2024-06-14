@@ -43,7 +43,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         }
 
         agents = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 40; i++) {
             Vektor2D position = new Vektor2D(random.nextDouble() * 2 - 1, random.nextDouble() * 2);
             Vektor2D velocity = new Vektor2D(random.nextDouble() * 0.002 - 0.001, random.nextDouble() * 0.002 - 0.001);
             agents.add(new Agent(i, position, velocity));
@@ -53,6 +53,24 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         clickPosition = null;
 
         initDisplay(c);
+
+        c.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int mouseX = e.getX();
+                int mouseY = e.getY();
+                // Transformiere Mauskoordinaten in Weltkoordinaten
+                float worldX = (float) (mouseX / (double) c.getWidth() * 4 - 2);
+                float worldY = (float) ((c.getHeight() - mouseY) / (double) c.getHeight() * 4 - 2); // Anpassung für Y-Koordinate
+                Vektor2D newTarget = new Vektor2D(worldX, -worldY + 1);
+                System.out.println("Mouse Clicked at: " + newTarget.x + ", " + newTarget.y);
+                for (Agent agent : agents) {
+                    agent.moveToTarget(newTarget);
+                }
+
+                target = newTarget;  // Setze das neue Ziel
+                clickPosition = newTarget;  // Aktualisiere die Klickposition
+            }
+        });
     }
 
     public boolean loadObject(String fileName) {
@@ -69,6 +87,8 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
 
     @Override
     public void renderLoop() {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         long start = System.nanoTime();
@@ -100,7 +120,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 glPopMatrix();
             }
 
-            //Punkt Zeichnen und target setzen
+            // Punkt Zeichnen und target setzen
             if (Mouse.isButtonDown(0)) {
                 int mouseX = Mouse.getX();
                 int mouseY = Mouse.getY();
@@ -123,16 +143,39 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
 
             // Rendern der Klickpositionen
             if (clickPosition != null) {
-                glColor3d(1.0, 0.0, 0.0);  // Rot für die Klickposition
-                glPushMatrix();
-                glTranslated(clickPosition.x, clickPosition.y, 0);
-                glScaled(0.05, 0.05, 0.05);  // Skaliere den Punkt
-                POGL.renderEgg(8);  // Verwende das Ei als Punkt
-                glPopMatrix();
+                drawTarget(clickPosition);
             }
 
             Display.update();
         }
+
+        glDisable(GL_BLEND);
+    }
+
+    private void drawTarget(Vektor2D target) {
+        // Zeichne gelben Punkt mit Glow-Effekt
+        int layers = 20;
+        double initialRadius = 0.01;
+        for (int i = layers; i > 0; i--) {
+            double alpha = 1.0 / i;
+            glColor4d(1.0, 1.0, 0.0, alpha);
+            glPushMatrix();
+            glTranslated(target.x, target.y, 0);
+            glScaled(initialRadius * i, initialRadius * i, 1.0);
+            drawCircle();
+            glPopMatrix();
+        }
+    }
+
+    private void drawCircle() {
+        int numSegments = 100;
+        glBegin(GL_TRIANGLE_FAN);
+        glVertex2f(0, 0);
+        for (int i = 0; i <= numSegments; i++) {
+            double angle = 2 * Math.PI * i / numSegments;
+            glVertex2d(Math.cos(angle), Math.sin(angle));
+        }
+        glEnd();
     }
 
     public static void main(String[] args) {
