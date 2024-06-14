@@ -7,11 +7,12 @@ public class Agent {
     public Vektor2D acceleration;
     public int id;
     private static final double MAX_SPEED = 0.0002; // Lower value for slower movement
-    private static final double MAX_FORCE = 0.05; // Lower value for slower movement
+    private static final double MAX_FORCE = 0.0007; // Lower value for slower movement
     private static final Random random = new Random();
     private static final PerlinNoise perlin = new PerlinNoise();
     private double timeOffset;
     private Vektor2D targetPosition; // Zielposition
+    private boolean reachedTarget; // Flag, um zu überprüfen, ob das Ziel erreicht wurde
 
     public Agent(int id, Vektor2D position, Vektor2D velocity) {
         this.id = id;
@@ -50,10 +51,12 @@ public class Agent {
         position.x += horizontalOffset + sineWaveHorizontal;
         
         applyBoundarySteering();
+        slowDownNearTarget();
 
         // Reset target position if reached
         if (targetPosition != null && position.distanceTo(targetPosition) < 0.01) {
             targetPosition = null;
+            reachedTarget = true;
         }
     }
 
@@ -168,5 +171,16 @@ public class Agent {
     
     public void moveToTarget(Vektor2D target) {
         this.targetPosition = target;
+        this.reachedTarget = false; // Ziel-Flag zurücksetzen
+    }
+    
+    private void slowDownNearTarget() {
+        if (targetPosition != null) {
+            double distance = position.distanceTo(targetPosition);
+            if (distance < 0.1) { // In der Nähe des Ziels
+                double speedFactor = distance / 0.01; // Verlangsamen in der Nähe des Ziels
+                velocity.mult(speedFactor);
+            }
+        }
     }
 }

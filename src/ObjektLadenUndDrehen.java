@@ -19,7 +19,8 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     Model object = null;
     boolean useKugel = false;
     Random random = new Random();
-    List<Vektor2D> clickPositions;  // Liste für die Klickpositionen
+    Vektor2D target;  // Das aktuelle Ziel
+    Vektor2D clickPosition;  // Die Position des aktuellen Klicks
 
     public ObjektLadenUndDrehen(String title, int width, int height, String fileName, float size, boolean useKugel) {
         super(title, width, height);
@@ -48,7 +49,9 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             agents.add(new Agent(i, position, velocity));
         }
 
-        clickPositions = new ArrayList<>();  // Initialisiere die Liste der Klickpositionen
+        target = null;
+        clickPosition = null;
+
         initDisplay(c);
     }
 
@@ -99,7 +102,6 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
 
             //Punkt Zeichnen und target setzen
             if (Mouse.isButtonDown(0)) {
-            	//System.out.println("Cool");
                 int mouseX = Mouse.getX();
                 int mouseY = Mouse.getY();
                 System.out.println("  Mouse X-Pos: " + mouseX);
@@ -107,20 +109,21 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 // Transformiere Mauskoordinaten in Weltkoordinaten
                 float worldX = (float) (mouseX / (double) Display.getWidth() * 4 - 2);
                 float worldY = (float) ((Display.getHeight() - mouseY) / (double) Display.getHeight() * 4 - 2); // Anpassung für Y-Koordinate
-                Vektor2D target = new Vektor2D(worldX, -worldY+1);
+                Vektor2D newTarget = new Vektor2D(worldX, -worldY + 1);
                 System.out.println("World X-Pos: " + worldX);
                 System.out.println("World Y-Pos: " + worldY);
 
                 for (Agent agent : agents) {
-                    agent.moveToTarget(target);
+                    agent.moveToTarget(newTarget);
                 }
 
-                clickPositions.add(target);  // Speichere die Klickposition
+                target = newTarget;  // Setze das neue Ziel
+                clickPosition = newTarget;  // Aktualisiere die Klickposition
             }
 
             // Rendern der Klickpositionen
-            glColor3d(1.0, 0.0, 0.0);  // Rot für die Klickpositionen
-            for (Vektor2D clickPosition : clickPositions) {
+            if (clickPosition != null) {
+                glColor3d(1.0, 0.0, 0.0);  // Rot für die Klickposition
                 glPushMatrix();
                 glTranslated(clickPosition.x, clickPosition.y, 0);
                 glScaled(0.05, 0.05, 0.05);  // Skaliere den Punkt
