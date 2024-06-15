@@ -6,8 +6,8 @@ public class Agent {
     public Vektor2D velocity;
     public Vektor2D acceleration;
     public int id;
-    private static final double MAX_SPEED = 0.0002; // Lower value for slower movement
-    private static final double MAX_FORCE = 0.0007; // Lower value for slower movement
+    private static final double MAX_SPEED = 0.0004; // Lower value for slower movement
+    private static final double MAX_FORCE = 0.0004; // Lower value for slower movement
     private static final Random random = new Random();
     private static final PerlinNoise perlin = new PerlinNoise();
     private double timeOffset;
@@ -157,9 +157,9 @@ public class Agent {
     }
 
     public void flock(List<Agent> agents) {
-        Vektor2D sep = separation(agents, 0.2).mult(0.4); // Increase separation weight
+        Vektor2D sep = separation(agents, 0.2).mult(2.4); // Increase separation weight
         Vektor2D ali = alignment(agents, 1.0).mult(1.0);
-        Vektor2D coh = cohesion(agents, 50.5).mult(1.9); // Reduce cohesion weight
+        Vektor2D coh = cohesion(agents, 1.5).mult(0.5); // Reduce cohesion weight
 
         applyForce(sep);
         applyForce(ali);

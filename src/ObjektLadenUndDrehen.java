@@ -43,7 +43,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         }
 
         agents = new ArrayList<>();
-        for (int i = 0; i < 40; i++) {
+        for (int i = 0; i < 30; i++) {
             Vektor2D position = new Vektor2D(random.nextDouble() * 2 - 1, random.nextDouble() * 2);
             Vektor2D velocity = new Vektor2D(random.nextDouble() * 0.002 - 0.001, random.nextDouble() * 0.002 - 0.001);
             agents.add(new Agent(i, position, velocity));
@@ -113,7 +113,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 double blue = 0.0;
                 glColor3d(red, green, blue);
                 if (useKugel) {
-                    POGL.renderEgg(8);
+                    POGL.renderEgg(6);
                 } else if (object != null) {
                     POGL.renderObject(object);
                 }
