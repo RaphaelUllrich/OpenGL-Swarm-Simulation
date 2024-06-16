@@ -183,4 +183,8 @@ public class Agent {
             }
         }
     }
+    
+    public Vektor2D getPosition() {
+    	return this.position;
+    }
 }

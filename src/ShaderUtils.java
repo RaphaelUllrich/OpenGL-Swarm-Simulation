@@ -1,67 +1,57 @@
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderUtils {
-    public static int loadShader(String vertexPath, String fragmentPath) {
-        StringBuilder vertexCode = new StringBuilder();
-        StringBuilder fragmentCode = new StringBuilder();
 
-        try {
-            BufferedReader vertexReader = new BufferedReader(new FileReader(vertexPath));
-            BufferedReader fragmentReader = new BufferedReader(new FileReader(fragmentPath));
+    public static int loadShaders(String vertexPath, String fragmentPath) {
+        int vertexShader = createShader(vertexPath, GL_VERTEX_SHADER);
+        int fragmentShader = createShader(fragmentPath, GL_FRAGMENT_SHADER);
+
+        int program = glCreateProgram();
+        glAttachShader(program, vertexShader);
+        glAttachShader(program, fragmentShader);
+        glLinkProgram(program);
+
+        IntBuffer linked = BufferUtils.createIntBuffer(1);
+        glGetProgram(program, GL_LINK_STATUS, linked);
+        if (linked.get(0) == GL_FALSE) {
+            System.err.println("Shader program linking failed.");
+            //System.err.println(glGetProgramInfoLog(program));
+            return -1;
+        }
+
+        glValidateProgram(program);
+        return program;
+    }
+
+    private static int createShader(String filePath, int shaderType) {
+        StringBuilder shaderSource = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
-
-            while ((line = vertexReader.readLine()) != null) {
-                vertexCode.append(line).append("\n");
+            while ((line = reader.readLine()) != null) {
+                shaderSource.append(line).append("\n");
             }
-            vertexReader.close();
-
-            while ((line = fragmentReader.readLine()) != null) {
-                fragmentCode.append(line).append("\n");
-            }
-            fragmentReader.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
-        int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, vertexCode.toString());
-        glCompileShader(vertexShader);
-        checkCompileErrors(vertexShader, "VERTEX");
+        int shader = glCreateShader(shaderType);
+        glShaderSource(shader, shaderSource);
+        glCompileShader(shader);
 
-        int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, fragmentCode.toString());
-        glCompileShader(fragmentShader);
-        checkCompileErrors(fragmentShader, "FRAGMENT");
-
-        int shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, vertexShader);
-        glAttachShader(shaderProgram, fragmentShader);
-        glLinkProgram(shaderProgram);
-        checkCompileErrors(shaderProgram, "PROGRAM");
-
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
-
-        return shaderProgram;
-    }
-
-    private static void checkCompileErrors(int shader, String type) {
-        IntBuffer success = BufferUtils.createIntBuffer(1);
-        if (type.equals("PROGRAM")) {
-            glGetProgram(shader, GL_LINK_STATUS, success);
-            if (success.get(0) == GL_FALSE) {
-                System.err.println("ERROR::SHADER::PROGRAM::LINKING_FAILED\n" + glGetProgramInfoLog(shader, 1024));
-            }
-        } else {
-            glGetShader(shader, GL_COMPILE_STATUS, success);
-            if (success.get(0) == GL_FALSE) {
-                System.err.println("ERROR::SHADER::" + type + "::COMPILATION_FAILED\n" + glGetShaderInfoLog(shader, 1024));
-            }
+        IntBuffer compiled = BufferUtils.createIntBuffer(1);
+        glGetShader(shader, GL_COMPILE_STATUS, compiled);
+        if (compiled.get(0) == GL_FALSE) {
+            System.err.println("Shader compilation failed for " + filePath);
+            //System.err.println(glGetShaderInfoLog(shader));
+            return -1;
         }
+
+        return shader;
     }
 }

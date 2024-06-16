@@ -1,4 +1,7 @@
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
+
 import java.awt.Canvas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,9 +11,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
 import org.lwjgl.opengl.Display;
 import org.lwjgl.input.Mouse;
 
@@ -21,10 +26,16 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     Random random = new Random();
     Vektor2D target;  // Das aktuelle Ziel
     Vektor2D clickPosition;  // Die Position des aktuellen Klicks
+    //BlurEffect blurEffect;
+    private int width, height;
 
     public ObjektLadenUndDrehen(String title, int width, int height, String fileName, float size, boolean useKugel) {
         super(title, width, height);
         this.useKugel = useKugel;
+        this.width = width;
+        this.height = height;
+
+        //blurEffect = new BlurEffect(width, height);
 
         JFrame f = new JFrame();
         f.setTitle(title);
@@ -95,6 +106,12 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         while (!Display.isCloseRequested()) {
             double t = (System.nanoTime() - start) / 1e9;
             POGL.clearBackgroundWithColor(0.15f, 0.15f, 0.15f, 1.0f);
+
+            // Render to framebuffer
+//            glBindFramebuffer(GL_FRAMEBUFFER, blurEffect.blurTexture1FB);
+//            glViewport(0, 0, width, height);
+//            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+//            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glLoadIdentity();
             glFrustum(-1, 1, -1, 1, 4, 10);
             glTranslated(0, -1, -8);
@@ -107,7 +124,6 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 glTranslated(agent.position.x, agent.position.y, 0);
                 glRotatef((float) Math.toDegrees(Math.atan2(agent.velocity.y, agent.velocity.x)), 0, 0, 1);
                 glScaled(0.03, 0.03, 0.03); // Make fireflies smaller
-                // Farben von Gelb zu Orange ändern
                 double red = 1.0;
                 double green = 0.8 + 0.2 * Math.sin(t);
                 double blue = 0.0;
@@ -119,8 +135,8 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 }
                 glPopMatrix();
             }
-
-            // Punkt Zeichnen und target setzen
+            
+         // Punkt Zeichnen und target setzen
             if (Mouse.isButtonDown(0)) {
                 int mouseX = Mouse.getX();
                 int mouseY = Mouse.getY();
@@ -140,11 +156,19 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 target = newTarget;  // Setze das neue Ziel
                 clickPosition = newTarget;  // Aktualisiere die Klickposition
             }
-
-            // Rendern der Klickpositionen
+            
+         // Rendern der Klickpositionen
             if (clickPosition != null) {
                 drawTarget(clickPosition);
             }
+
+//            blurEffect.applyBlurEffect();
+//
+//            // Render to screen
+//            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//            glViewport(0, 0, width, height);
+//            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//            blurEffect.renderBlurredResult();
 
             Display.update();
         }
@@ -153,7 +177,6 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     }
 
     private void drawTarget(Vektor2D target) {
-        // Zeichne gelben Punkt mit Glow-Effekt
         int layers = 20;
         double initialRadius = 0.01;
         for (int i = layers; i > 0; i--) {
@@ -200,7 +223,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectionFrame.dispose();
-                new ObjektLadenUndDrehen("Objekt drehen", 500, 500, "objects/firefly.obj", 10, false).start();
+                new ObjektLadenUndDrehen("Objekt drehen", 500, 500, "objects/fireflyLow.obj", 10, false).start();
             }
         });
 
