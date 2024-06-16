@@ -6,8 +6,8 @@ public class Agent {
     public Vektor2D velocity;
     public Vektor2D acceleration;
     public int id;
-    private static final double MAX_SPEED = 0.0004; // Lower value for slower movement
-    private static final double MAX_FORCE = 0.0004; // Lower value for slower movement
+    private static final double MAX_SPEED = 0.006; // Lower value for slower movement
+    private static final double MAX_FORCE = 0.4; // Lower value for slower movement
     private static final Random random = new Random();
     private static final PerlinNoise perlin = new PerlinNoise();
     private double timeOffset;
@@ -33,25 +33,25 @@ public class Agent {
             applyForce(seekForce);
         }
 
-        velocity.add(acceleration);
+        velocity.add(acceleration.mult(t));
         velocity.truncate(MAX_SPEED); // Limit velocity to MAX_SPEED
-        position.add(velocity);
+        position.add(velocity.mult(t));
         acceleration.mult(0);
 
         // Apply Perlin noise to simulate smooth random vertical movement
         double noise = perlin.noise(position.x, position.y, t + timeOffset);
-        double verticalOffset = (noise) * 0.000009; // Adjust the scale of vertical movement
-        double horizontalOffset = (noise) * 0.000009; // Adjust the scale of horizontal movement
+        double verticalOffset = (noise) * 0.0009 * t; // Adjust the scale of vertical movement
+        double horizontalOffset = (noise) * 0.0009 * t; // Adjust the scale of horizontal movement
         
         // Apply sine wave to create oscillation
-        double sineWave = Math.sin((t + timeOffset) * 0.8) * 0.0001; // Adjust the amplitude and frequency of the sine wave
-        double sineWaveHorizontal = Math.sin((t + timeOffset) * 2.2) * 0.0001; // Adjust the amplitude and frequency of the sine wave
+        double sineWave = Math.sin((t + timeOffset) * 0.2) * 0.001 * t; // Adjust the amplitude and frequency of the sine wave
+        double sineWaveHorizontal = Math.sin((t + timeOffset) * 0.2) * 0.001 * t; // Adjust the amplitude and frequency of the sine wave
 
         position.y += verticalOffset + sineWave;
         position.x += horizontalOffset + sineWaveHorizontal;
         
-        applyBoundarySteering();
-        slowDownNearTarget();
+        applyBoundarySteering(t);
+        slowDownNearTarget(t);
 
         // Reset target position if reached
         if (targetPosition != null && position.distanceTo(targetPosition) < 0.01) {
@@ -60,10 +60,10 @@ public class Agent {
         }
     }
 
-    private void applyBoundarySteering() {
-        double boundaryDistanceY = 0.0; // Distance from boundary to start steering
-        double boundaryDistanceX = 0.0;
-        double turnStrength = 1.05; // Strength of the turn force
+    private void applyBoundarySteering(double t) {
+        double boundaryDistanceY = 1.0; // Distance from boundary to start steering
+        double boundaryDistanceX = 1.0;
+        double turnStrength = 3.5 * t; // Strength of the turn force
 
         Vektor2D steer = new Vektor2D();
 
@@ -157,9 +157,9 @@ public class Agent {
     }
 
     public void flock(List<Agent> agents) {
-        Vektor2D sep = separation(agents, 0.2).mult(2.4); // Increase separation weight
+        Vektor2D sep = separation(agents, 0.2).mult(0.4); // Increase separation weight
         Vektor2D ali = alignment(agents, 1.0).mult(1.0);
-        Vektor2D coh = cohesion(agents, 1.5).mult(0.5); // Reduce cohesion weight
+        Vektor2D coh = cohesion(agents, 1.5).mult(2.5); // Reduce cohesion weight
 
         applyForce(sep);
         applyForce(ali);
@@ -174,12 +174,12 @@ public class Agent {
         this.reachedTarget = false; // Ziel-Flag zurücksetzen
     }
     
-    private void slowDownNearTarget() {
+    private void slowDownNearTarget(double t) {
         if (targetPosition != null) {
             double distance = position.distanceTo(targetPosition);
             if (distance < 0.1) { // In der Nähe des Ziels
                 double speedFactor = distance / 0.01; // Verlangsamen in der Nähe des Ziels
-                velocity.mult(speedFactor);
+                velocity.mult(speedFactor * t);
             }
         }
     }
