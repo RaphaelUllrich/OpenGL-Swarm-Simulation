@@ -1,4 +1,11 @@
 public class BlurEffectShaderCode {
+	public static final String VERT_SHADER_PASS_THROUGH = 
+	        "#version 130\n" +
+	        "in vec2 position;" +
+	        "void main(void) {" +
+	        "    gl_Position = vec4(position, 0.0, 1.0);" +
+	        "}";
+	
     public static final String FRAG_SHADER_BLUR_EFFECT = 
         "#version 130\n" +
         "uniform sampler2D tex2;" +

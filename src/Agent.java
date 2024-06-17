@@ -7,7 +7,7 @@ public class Agent {
     public Vektor2D acceleration;
     public int id;
     private static final double MAX_SPEED = 0.006; // Lower value for slower movement
-    private static final double MAX_FORCE = 0.4; // Lower value for slower movement
+    private static final double MAX_FORCE = 0.9; // Lower value for slower movement
     private static final Random random = new Random();
     private static final PerlinNoise perlin = new PerlinNoise();
     private double timeOffset;
@@ -29,7 +29,7 @@ public class Agent {
 
     public void update(double t) {
         if (targetPosition != null) {
-            Vektor2D seekForce = (seek(targetPosition).mult(70));
+            Vektor2D seekForce = (seek(targetPosition).mult(200));
             applyForce(seekForce);
         }
 
@@ -39,16 +39,14 @@ public class Agent {
         acceleration.mult(0);
 
         // Apply Perlin noise to simulate smooth random vertical movement
-        double noise = perlin.noise(position.x, position.y, t + timeOffset);
-        double verticalOffset = (noise) * 0.0009 * t; // Adjust the scale of vertical movement
-        double horizontalOffset = (noise) * 0.0009 * t; // Adjust the scale of horizontal movement
+
         
         // Apply sine wave to create oscillation
         double sineWave = Math.sin((t + timeOffset) * 0.2) * 0.001 * t; // Adjust the amplitude and frequency of the sine wave
-        double sineWaveHorizontal = Math.sin((t + timeOffset) * 0.2) * 0.001 * t; // Adjust the amplitude and frequency of the sine wave
+        double sineWaveHorizontal = Math.sin((t + timeOffset) * 0.2) * 0.003 * t; // Adjust the amplitude and frequency of the sine wave
 
-        position.y += verticalOffset + sineWave;
-        position.x += horizontalOffset + sineWaveHorizontal;
+        position.y += sineWave;
+        position.x += sineWaveHorizontal;
         
         applyBoundarySteering(t);
         slowDownNearTarget(t);
@@ -63,7 +61,7 @@ public class Agent {
     private void applyBoundarySteering(double t) {
         double boundaryDistanceY = 1.0; // Distance from boundary to start steering
         double boundaryDistanceX = 1.0;
-        double turnStrength = 3.5 * t; // Strength of the turn force
+        double turnStrength = 0.5 * t; // Strength of the turn force
 
         Vektor2D steer = new Vektor2D();
 
@@ -159,7 +157,7 @@ public class Agent {
     public void flock(List<Agent> agents) {
         Vektor2D sep = separation(agents, 0.2).mult(0.4); // Increase separation weight
         Vektor2D ali = alignment(agents, 1.0).mult(1.0);
-        Vektor2D coh = cohesion(agents, 1.5).mult(2.5); // Reduce cohesion weight
+        Vektor2D coh = cohesion(agents, 1.5).mult(0.5); // Reduce cohesion weight
 
         applyForce(sep);
         applyForce(ali);

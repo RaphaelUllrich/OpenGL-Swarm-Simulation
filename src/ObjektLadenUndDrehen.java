@@ -149,7 +149,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             lastTime = now;
 
             // Update positions with delta time
-            //POGL.clearBackgroundWithColor(0.15f, 0.15f, 0.15f, 1.0f);
+            POGL.clearBackgroundWithColor(0.15f, 0.15f, 0.15f, 1.0f);
 
             glLoadIdentity();
             glFrustum(-1, 1, -1, 1, 4, 10);
