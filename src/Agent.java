@@ -61,8 +61,8 @@ public class Agent {
     }
 
     private void applyBoundarySteering() {
-        double boundaryDistanceY = 0.0; // Distance from boundary to start steering
-        double boundaryDistanceX = 0.0;
+        double boundaryDistanceY = 1.0; // Distance from boundary to start steering
+        double boundaryDistanceX = 1.0;
         double turnStrength = 1.05; // Strength of the turn force
 
         Vektor2D steer = new Vektor2D();

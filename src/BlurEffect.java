@@ -10,9 +10,9 @@ public class BlurEffect extends LWJGLBasisFenster {
     public int blurTexture1, blurTexture1FB;
     public int blurTexture2, blurTexture2FB;
     public int gaussTexture;
-    public int programBlureffect, programBlureffectVisualisation;
+    public int programBlureffect, programBlureffectVisualisation, programWeakerBlureffect;
     private int uniform_fragShaderBlureffect_s, uniform_fragShaderBlureffect_tex2;
-    private int uniform_fragShaderBlureffectVisualisation_tex1;
+    private int uniform_fragShaderBlureffectVisualisation_tex1, uniform_fragShaderWeakerBlureffect_s, uniform_fragShaderWeakerBlureffect_tex2;
 
     public final int WB, HB;
 
@@ -55,43 +55,54 @@ public class BlurEffect extends LWJGLBasisFenster {
 
     public void prepareShaderBlurEffect() {
         programBlureffect = glCreateProgram();
-
         int fragShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragShader, BlurEffectShaderCode.FRAG_SHADER_BLUR_EFFECT);
         glCompileShader(fragShader);
         System.out.println(glGetShaderInfoLog(fragShader, 1024));
         glAttachShader(programBlureffect, fragShader);
-
         glLinkProgram(programBlureffect);
         uniform_fragShaderBlureffect_s = glGetUniformLocation(programBlureffect, "s");
         uniform_fragShaderBlureffect_tex2 = glGetUniformLocation(programBlureffect, "tex2");
         glUseProgram(programBlureffect);
-        
         glUniform2f(uniform_fragShaderBlureffect_s, 1.0f / WB, 1.0f / HB);
         glUniform1i(uniform_fragShaderBlureffect_tex2, 0);
-        
         ShaderUtilities.testShaderProgram(programBlureffect);
+
+        // Prepare weaker blur effect shader
+        programWeakerBlureffect = glCreateProgram();
+        int fragShaderWeaker = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragShaderWeaker, WeakerBlurEffectShaderCode.FRAG_SHADER_WEAKER_BLUR_EFFECT);
+        glCompileShader(fragShaderWeaker);
+        System.out.println(glGetShaderInfoLog(fragShaderWeaker, 1024));
+        glAttachShader(programWeakerBlureffect, fragShaderWeaker);
+        glLinkProgram(programWeakerBlureffect);
+        uniform_fragShaderWeakerBlureffect_s = glGetUniformLocation(programWeakerBlureffect, "s");
+        uniform_fragShaderWeakerBlureffect_tex2 = glGetUniformLocation(programWeakerBlureffect, "tex2");
+        glUseProgram(programWeakerBlureffect);
+        glUniform2f(uniform_fragShaderWeakerBlureffect_s, 1.0f / WB, 1.0f / HB);
+        glUniform1i(uniform_fragShaderWeakerBlureffect_tex2, 0);
+        ShaderUtilities.testShaderProgram(programWeakerBlureffect);
     }
 
     public void prepareShaderVisualisierung() {
         programBlureffectVisualisation = glCreateProgram();
-
         int fragShader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragShader, BlurEffectShaderCode.FRAG_SHADER_BLUR_EFFECT_VISUALISATION);
         glCompileShader(fragShader);
         System.out.println(glGetShaderInfoLog(fragShader, 1024));
         glAttachShader(programBlureffectVisualisation, fragShader);
-
         glLinkProgram(programBlureffectVisualisation);
         uniform_fragShaderBlureffectVisualisation_tex1 = glGetUniformLocation(programBlureffectVisualisation, "tex1");
         glUseProgram(programBlureffectVisualisation);
-        
         glUniform1i(uniform_fragShaderBlureffectVisualisation_tex1, 0);
-        
         ShaderUtilities.testShaderProgram(programBlureffectVisualisation);
     }
 
     public void applyBlurEffect(Runnable renderContent) {
+        applyBlurEffect(renderContent, false);
+    }
+
+    public void applyBlurEffect(Runnable renderContent, boolean weakerBlur) {
         int helpFB = blurTexture1FB;
         int helpT = blurTexture1;
         blurTexture1FB = blurTexture2FB;
@@ -116,7 +127,7 @@ public class BlurEffect extends LWJGLBasisFenster {
         glDisable(GL_BLEND);
 
         glBindFramebuffer(GL_FRAMEBUFFER, blurTexture1FB);
-        glUseProgram(programBlureffect);
+        glUseProgram(weakerBlur ? programWeakerBlureffect : programBlureffect);
         glViewport(0, 0, WB, HB);
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -144,7 +155,6 @@ public class BlurEffect extends LWJGLBasisFenster {
         glUseProgram(0);
     }
 
-    // Empty implementation of the abstract renderLoop method
     @Override
     public void renderLoop() {
         // No implementation needed for this class

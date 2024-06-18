@@ -142,6 +142,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     public void renderLoop() {
         long lastTime = System.nanoTime();
         final double nsPerTick = 1e9 / 60; // 60 ticks per second
+        double t = (System.nanoTime() - lastTime) / 1e9;
 
         while (!Display.isCloseRequested()) {
             long now = System.nanoTime();
@@ -154,29 +155,45 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             glLoadIdentity();
             glFrustum(-1, 1, -1, 1, 4, 10);
             glTranslated(0, -1, -8);
-
+            
+            
             for (Agent agent : agents) {
-                agent.flock(agents);
-                agent.update(delta);
-
-                // Apply BlurEffect shader
-                blurEffect.applyBlurEffect(() -> {
-                    glPushMatrix();
-                    glTranslated(agent.position.x, agent.position.y, 0);
-                    glScaled(0.015, 0.015, 0.015); // Make fireflies smaller
-                    double red = 1.0;
-                    double green = 0.8 + 0.2 * Math.sin(now / 1e9); // Use current time in seconds
-                    double blue = 0.0;
-                    glColor3d(red, green, blue);
-                    if (useKugel) {
-                        POGL.renderEgg(6);
-                    } else if (object != null) {
-                        POGL.renderObject(object);
-                    }
-                    glPopMatrix();
-                });
+	            agent.flock(agents);
+	            agent.update(delta);
+	
+	             // Apply BlurEffect shader
+	            if (useKugel) {
+	                blurEffect.applyBlurEffect(() -> {
+		                glPushMatrix();
+		                glTranslated(agent.position.x, agent.position.y, 0);
+		                glScaled(0.015, 0.015, 0.015); // Make fireflies smaller
+		                double red = 1.0;
+		                double green = 0.8 + 0.2 * Math.sin(t); // Use current time in seconds
+		                double blue = 0.0;
+		                glColor3d(red, green, blue);
+		                    
+		                POGL.renderEgg(6);
+		                glPopMatrix();
+	                });
+            	}
+	            else {
+	            	blurEffect.applyBlurEffect(() -> {
+		            	glPushMatrix();
+		                glTranslated(agent.position.x, agent.position.y, 0);
+		                glRotatef((float)t*50.0f, 0.0f, 1.0f, 0.0f);
+		                glScaled(0.075, 0.075, 0.075); // Make fireflies smaller
+		                double red = 1.0;
+		                double green = 0.8 + 0.2 * Math.sin(t); // Use current time in seconds
+		                double blue = 0.0;
+		                glColor3d(red, green, blue);
+		                if (object != null) {
+		                    POGL.renderObject(object);
+		                }
+		                glPopMatrix();
+	            	}, true);
+	            }
             }
-
+            
             // Punkt Zeichnen und target setzen
             if (Mouse.isButtonDown(0)) {
                 int mouseX = Mouse.getX();
@@ -200,7 +217,14 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
 
             // Rendern der Klickpositionen
             if (clickPosition != null) {
-                blurEffect.applyBlurEffect(() -> drawTarget(clickPosition));
+            	if (useKugel) {
+            		blurEffect.applyBlurEffect(() -> drawTarget(clickPosition));
+            	}
+            	else {
+
+            		blurEffect.applyBlurEffect(() -> drawTarget(clickPosition));		//TODO: Unterscheidung auflösen (beides das gleiche)
+            	}
+                
             }
 
             Display.update();
@@ -217,7 +241,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         for (int i = layers; i > 0; i--) {
             double alpha = 1.0 / i;  // Alpha-Wert basierend auf dem aktuellen Layer
 
-            glColor4d(1.0, 1.0, 0.0, alpha);  // Setze die Farbe mit Alpha-Wert
+            glColor4d(1.0, 1.0, 0.0, alpha);  // Setze die Farbe mit Alpha-Wert (Gelb)
             glPushMatrix();
             glTranslated(target.x, target.y, 0);
             glScaled(initialRadius * i, initialRadius * i, 1.0);  // Skaliere basierend auf dem aktuellen Layer
@@ -260,7 +284,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectionFrame.dispose();
-                new ObjektLadenUndDrehen("Objekt drehen", 890, 570, "objects/fireflyLow.obj", 10, false).start();
+                new ObjektLadenUndDrehen("Objekt drehen", 890, 570, "objects/fireflyLow3.obj", 10, false).start();
             }
         });
 
