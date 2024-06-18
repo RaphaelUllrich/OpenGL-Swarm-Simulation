@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL13.*;
 
 import java.awt.BorderLayout;
 import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -30,6 +31,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     Random random = new Random();
     Vektor2D target;  // Das aktuelle Ziel
     Vektor2D clickPosition;  // Die Position des aktuellen Klicks
+    private boolean shock = false;;
 
     private int width, height;
 
@@ -59,9 +61,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             @Override
             public void windowClosing(WindowEvent e) {
                 running = false;
-
-                    Display.destroy();
-
+                Display.destroy();
             }
         });
 
@@ -125,12 +125,39 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             public void actionPerformed(ActionEvent e) {
                 target = null;
                 clickPosition = null;
+                for (Agent agent : agents) {
+                    agent.resetTarget();
+                }
+                System.out.println("cooool");
+            }
+        });
+        
+        JButton shockButton = new JButton("Shock swarm");
+        shockButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ex) {
+                target = null;
+                clickPosition = null;
+                for (Agent agent : agents) {
+                    agent.shock();
+                }
+                System.out.println("cool");
+                if (!shock) {
+                	shock = true;
+                	shockButton.setText("calm dowm");
+                }
+                else {
+                	shock = false;
+                	shockButton.setText("Shock swarm");
+                }
             }
         });
 
         // Add the button to the JFrame
         JPanel panel = new JPanel();
+        panel.setBackground(Color.black);
         panel.add(resetButton);
+        panel.add(shockButton);
         f.add(panel, BorderLayout.NORTH);
     }
 
@@ -172,7 +199,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
 
             for (Agent agent : agents) {
                 agent.flock(agents);
-                agent.update(delta);
+                agent.update(delta, shock);
 
                 // Apply BlurEffect shader
                 if (useKugel) {
@@ -292,7 +319,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectionFrame.dispose();
-                new ObjektLadenUndDrehen("Objekt drehen", 890, 570, "objects/fireflyLow3.obj", 10, false).start();
+                new ObjektLadenUndDrehen("Objekt drehen", 890, 525, "objects/fireflyLow3.obj", 10, false).start();
             }
         });
 
@@ -300,7 +327,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectionFrame.dispose();
-                new ObjektLadenUndDrehen("Kugel drehen", 890, 570, null, 10, true).start();
+                new ObjektLadenUndDrehen("Kugel drehen", 890, 525, null, 10, true).start();
             }
         });
 
