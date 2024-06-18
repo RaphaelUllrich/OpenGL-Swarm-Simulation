@@ -7,17 +7,17 @@ import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.LWJGLException;
@@ -36,6 +36,8 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     // BlurEffect instance
     private BlurEffect blurEffect;
 
+    private volatile boolean running = true;
+
     public ObjektLadenUndDrehen(String title, int width, int height, String fileName, float size, boolean useKugel) {
         super(title, width, height);
         this.useKugel = useKugel;
@@ -53,56 +55,68 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         f.setLocationRelativeTo(null);
         f.setVisible(true);
 
-        try {
-            Display.setParent(c);
-            Display.setDisplayMode(new DisplayMode(width, height)); // Ensure double buffering is enabled
-            Display.create();
-        } catch (LWJGLException e) {
-            e.printStackTrace();
-        }
+        f.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                running = false;
 
-        // Initialize OpenGL context and BlurEffect
-        initGL();
-        blurEffect = new BlurEffect(width, height);
-        blurEffect.prepareZweiRotierendeFrameBuffer();
-        blurEffect.prepareShaderBlurEffect();
-        blurEffect.prepareShaderVisualisierung();
+                    Display.destroy();
 
-        if (!useKugel) {
-            loadObject(fileName);
-            if (object != null) {
-                object.size = size;
-            }
-        }
-
-        agents = new ArrayList<>();
-        for (int i = 0; i < 30; i++) {
-            Vektor2D position = new Vektor2D(random.nextDouble() * 1 - 0.5, random.nextDouble() * 1 - 0.5);
-            Vektor2D velocity = new Vektor2D(random.nextDouble() * 0.002 - 0.001, random.nextDouble() * 0.002 - 0.001);
-            agents.add(new Agent(i, position, velocity));
-        }
-
-        target = null;
-        clickPosition = null;
-
-        // Adding mouse listener to canvas
-        c.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                int mouseX = e.getX();
-                int mouseY = e.getY();
-                // Transformiere Mauskoordinaten in Weltkoordinaten
-                float worldX = (float) (mouseX / (double) c.getWidth() * 4 - 2);
-                float worldY = (float) ((c.getHeight() - mouseY) / (double) c.getHeight() * 4 - 2); // Anpassung für Y-Koordinate
-                Vektor2D newTarget = new Vektor2D(worldX, -worldY + 1);
-                System.out.println("Mouse Clicked at: " + newTarget.x + ", " + newTarget.y);
-                for (Agent agent : agents) {
-                    agent.moveToTarget(newTarget);
-                }
-
-                target = newTarget;  // Setze das neue Ziel
-                clickPosition = newTarget;  // Aktualisiere die Klickposition
             }
         });
+
+        new Thread(() -> {
+            try {
+                Display.setParent(c);
+                Display.setDisplayMode(new DisplayMode(width, height)); // Ensure double buffering is enabled
+                Display.create();
+                initGL();
+                blurEffect = new BlurEffect(width, height);
+                blurEffect.prepareZweiRotierendeFrameBuffer();
+                blurEffect.prepareShaderBlurEffect();
+                blurEffect.prepareShaderVisualisierung();
+
+                if (!useKugel) {
+                    loadObject(fileName);
+                    if (object != null) {
+                        object.size = size;
+                    }
+                }
+
+                agents = new ArrayList<>();
+                for (int i = 0; i < 30; i++) {
+                    Vektor2D position = new Vektor2D(random.nextDouble() * 1 - 0.5, random.nextDouble() * 1 - 0.5);
+                    Vektor2D velocity = new Vektor2D(random.nextDouble() * 0.002 - 0.001, random.nextDouble() * 0.002 - 0.001);
+                    agents.add(new Agent(i, position, velocity));
+                }
+
+                target = null;
+                clickPosition = null;
+
+                // Adding mouse listener to canvas
+                c.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent e) {
+                        int mouseX = e.getX();
+                        int mouseY = e.getY();
+                        // Transformiere Mauskoordinaten in Weltkoordinaten
+                        float worldX = (float) (mouseX / (double) c.getWidth() * 4 - 2);
+                        float worldY = (float) ((c.getHeight() - mouseY) / (double) c.getHeight() * 4 - 2); // Anpassung für Y-Koordinate
+                        Vektor2D newTarget = new Vektor2D(worldX, -worldY + 1);
+                        System.out.println("Mouse Clicked at: " + newTarget.x + ", " + newTarget.y);
+                        for (Agent agent : agents) {
+                            agent.moveToTarget(newTarget);
+                        }
+
+                        target = newTarget;  // Setze das neue Ziel
+                        clickPosition = newTarget;  // Aktualisiere die Klickposition
+                    }
+                });
+
+                renderLoop();
+            } catch (LWJGLException e) {
+                e.printStackTrace();
+            }
+        }).start();
 
         // Create and add a button to reset the target
         JButton resetButton = new JButton("Reset Target");
@@ -113,7 +127,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 clickPosition = null;
             }
         });
-        
+
         // Add the button to the JFrame
         JPanel panel = new JPanel();
         panel.add(resetButton);
@@ -144,7 +158,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         final double nsPerTick = 1e9 / 60; // 60 ticks per second
         double t = (System.nanoTime() - lastTime) / 1e9;
 
-        while (!Display.isCloseRequested()) {
+        while (running && !Display.isCloseRequested()) {
             long now = System.nanoTime();
             double delta = (now - lastTime) / nsPerTick;
             lastTime = now;
@@ -155,45 +169,45 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             glLoadIdentity();
             glFrustum(-1, 1, -1, 1, 4, 10);
             glTranslated(0, -1, -8);
-            
-            
+
             for (Agent agent : agents) {
-	            agent.flock(agents);
-	            agent.update(delta);
-	
-	             // Apply BlurEffect shader
-	            if (useKugel) {
-	                blurEffect.applyBlurEffect(() -> {
-		                glPushMatrix();
-		                glTranslated(agent.position.x, agent.position.y, 0);
-		                glScaled(0.015, 0.015, 0.015); // Make fireflies smaller
-		                double red = 1.0;
-		                double green = 0.8 + 0.2 * Math.sin(t); // Use current time in seconds
-		                double blue = 0.0;
-		                glColor3d(red, green, blue);
-		                    
-		                POGL.renderEgg(6);
-		                glPopMatrix();
-	                });
-            	}
-	            else {
-	            	blurEffect.applyBlurEffect(() -> {
-		            	glPushMatrix();
-		                glTranslated(agent.position.x, agent.position.y, 0);
-		                glRotatef((float)t*50.0f, 0.0f, 1.0f, 0.0f);
-		                glScaled(0.075, 0.075, 0.075); // Make fireflies smaller
-		                double red = 1.0;
-		                double green = 0.8 + 0.2 * Math.sin(t); // Use current time in seconds
-		                double blue = 0.0;
-		                glColor3d(red, green, blue);
-		                if (object != null) {
-		                    POGL.renderObject(object);
-		                }
-		                glPopMatrix();
-	            	}, true);
-	            }
+                agent.flock(agents);
+                agent.update(delta);
+
+                // Apply BlurEffect shader
+                if (useKugel) {
+                    blurEffect.applyBlurEffect(() -> {
+                        glPushMatrix();
+                        glTranslated(agent.position.x, agent.position.y, 0);
+                        glScaled(0.015, 0.015, 0.015); // Make fireflies smaller
+                        double red = 1.0;
+                        double green = 0.8 + 0.2 * Math.sin(t); // Use current time in seconds
+                        double blue = 0.0;
+                        glColor3d(red, green, blue);
+
+                        POGL.renderEgg(6);
+                        glPopMatrix();
+                    });
+                } else {
+                    blurEffect.applyBlurEffect(() -> {
+                        glPushMatrix();
+                        glTranslated(agent.position.x, agent.position.y, 0);
+                        glRotatef((float) t * 50.0f, 1.0f, 0.0f, 0.0f); // Rotation um X-Achse
+                        glRotatef((float) t * 30.0f, 0.0f, 1.0f, 0.0f); // Rotation um Y-Achse
+                        glRotatef((float) t * 20.0f, 0.0f, 0.0f, 1.0f); // Rotation um Z-Achse
+                        glScaled(0.055, 0.055, 0.055); // Make fireflies smaller
+                        double red = 1.0;
+                        double green = 0.8 + 0.2 * Math.sin(t); // Use current time in seconds
+                        double blue = 0.0;
+                        glColor3d(red, green, blue);
+                        if (object != null) {
+                            POGL.renderObject(object);
+                        }
+                        glPopMatrix();
+                    }, true);
+                }
             }
-            
+
             // Punkt Zeichnen und target setzen
             if (Mouse.isButtonDown(0)) {
                 int mouseX = Mouse.getX();
@@ -217,21 +231,15 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
 
             // Rendern der Klickpositionen
             if (clickPosition != null) {
-            	if (useKugel) {
-            		blurEffect.applyBlurEffect(() -> drawTarget(clickPosition));
-            	}
-            	else {
-
-            		blurEffect.applyBlurEffect(() -> drawTarget(clickPosition));		//TODO: Unterscheidung auflösen (beides das gleiche)
-            	}
-                
+                blurEffect.applyBlurEffect(() -> drawTarget(clickPosition));
             }
 
             Display.update();
             Display.sync(60); // Limit framerate to 60 FPS
         }
 
-        glDisable(GL_BLEND);
+        Display.destroy();
+        System.exit(0); // Ensure the application exits cleanly
     }
 
     private void drawTarget(Vektor2D target) {
