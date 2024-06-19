@@ -222,7 +222,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                         glRotatef((float) t * 50.0f, 1.0f, 0.0f, 0.0f); // Rotation um X-Achse
                         glRotatef((float) t * 30.0f, 0.0f, 1.0f, 0.0f); // Rotation um Y-Achse
                         glRotatef((float) t * 20.0f, 0.0f, 0.0f, 1.0f); // Rotation um Z-Achse
-                        glScaled(0.055, 0.055, 0.055); // Make fireflies smaller
+                        glScaled(0.01, 0.01, 0.01); // Make fireflies smaller
                         double red = 1.0;
                         double green = 0.8 + 0.2 * Math.sin(t); // Use current time in seconds
                         double blue = 0.0;
@@ -319,7 +319,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectionFrame.dispose();
-                new ObjektLadenUndDrehen("Objekt drehen", 890, 525, "objects/fireflyLow3.obj", 10, false).start();
+                new ObjektLadenUndDrehen("Objekt drehen", 890, 525, "objects/fireflyExtended.obj", 10, false).start();
             }
         });
 
