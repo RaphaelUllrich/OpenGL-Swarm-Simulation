@@ -6,8 +6,8 @@ public class Agent {
     public Vektor2D velocity;
     public Vektor2D acceleration;
     public int id;
-    private static final double MAX_SPEED = 0.005; // Lower value for slower movement
-    private static final double MAX_FORCE = 0.0004; // Lower value for slower movement
+    private static final double MAX_SPEED = 0.005;
+    private static final double MAX_FORCE = 0.0004;
     private static final Random random = new Random();
     private static final PerlinNoise perlin = new PerlinNoise();
     private double timeOffset;
@@ -24,7 +24,7 @@ public class Agent {
         this.position = position;
         this.velocity = velocity;
         this.acceleration = new Vektor2D();
-        this.timeOffset = random.nextDouble() * 1000; // Random offset for each agent
+        this.timeOffset = random.nextDouble() * 1000; // random offset
         this.targetPosition = null; // Initialisiere Zielposition als null
     }
 
@@ -39,39 +39,36 @@ public class Agent {
         }
 
         velocity.add(acceleration);
-        velocity.truncate(MAX_SPEED); // Limit velocity to MAX_SPEED
+        velocity.truncate(MAX_SPEED);
         position.add(velocity);
         acceleration.mult(0);
 
-        // Apply Perlin noise to simulate smooth random vertical movement
+        // smooth random vertical movement
         double noise = perlin.noise(position.x, position.y, t + timeOffset);
-        double verticalOffset = (noise) * 0.000009; // Adjust the scale of vertical movement
-        double horizontalOffset = (noise) * 0.000009; // Adjust the scale of horizontal movement
+        double verticalOffset = (noise) * 0.000009;
+        double horizontalOffset = (noise) * 0.000009;
         
         if (shock) {
-        	double sineWave = Math.sin((t + timeOffset) * 10.8) * 0.01; // Adjust the amplitude and frequency of the sine wave
-            double sineWaveHorizontal = Math.sin((t + timeOffset) * 10.2) * 0.01; // Adjust the amplitude and frequency of the sine wave
+        	double sineWave = Math.sin((t + timeOffset) * 10.8) * 0.01;
+            double sineWaveHorizontal = Math.sin((t + timeOffset) * 10.2) * 0.01;
             
             position.y += verticalOffset + sineWave;
             position.x += horizontalOffset + sineWaveHorizontal;
         }
         else {
-        	double sineWave = Math.sin((t + timeOffset) * 0.8) * 0.001; // Adjust the amplitude and frequency of the sine wave
-            double sineWaveHorizontal = Math.sin((t + timeOffset) * 2.2) * 0.001; // Adjust the amplitude and frequency of the sine wave
+        	double sineWave = Math.sin((t + timeOffset) * 0.8) * 0.001;
+            double sineWaveHorizontal = Math.sin((t + timeOffset) * 2.2) * 0.001;
             
             position.y += verticalOffset + sineWave;
             position.x += horizontalOffset + sineWaveHorizontal;
-        }
-        // Apply sine wave to create oscillation
-        
+        }        
 
         applyBoundarySteering();
         slowDownNearTarget();
         
-     // Ensure the agents stay within the boundaries
         keepWithinBounds();
 
-        // Reset target position if reached
+        // reset target wenn erreicht
         if (targetPosition != null && position.distanceTo(targetPosition) < 0.01) {
             targetPosition = null;
             reachedTarget = true;
@@ -97,9 +94,9 @@ public class Agent {
     }
 
     private void applyBoundarySteering() {
-        double boundaryDistanceY = 1.0; // Distance from boundary to start steering
+        double boundaryDistanceY = 1.0; //Distanz ab wann gestartet wird entgegenzulenken
         double boundaryDistanceX = 1.0;
-        double turnStrength = 1.05; // Strength of the turn force
+        double turnStrength = 1.05;
 
         Vektor2D steer = new Vektor2D();
 
@@ -194,31 +191,31 @@ public class Agent {
 
     public void flock(List<Agent> agents) {
 
-    		Vektor2D sep = separation(agents, 0.2).mult(0.4); // Increase separation weight
+    		Vektor2D sep = separation(agents, 0.2).mult(0.4);
     		Vektor2D ali = alignment(agents, 1.0).mult(1.0);
-    		Vektor2D coh = cohesion(agents, 1.5).mult(1.5); // Reduce cohesion weight
+    		Vektor2D coh = cohesion(agents, 1.5).mult(1.5);
     		
     		applyForce(sep);
     	    applyForce(ali);
     	    applyForce(coh);
 
-        // Add a small random force to introduce randomness
+        // kleine random force
         applyForce(new Vektor2D(random.nextDouble() * 0.01 - 0.005, random.nextDouble() * 0.01 - 0.005));
     }
     
     public void moveToTarget(Vektor2D target) {
         this.targetPosition = target;
-        this.reachedTarget = false; // Ziel-Flag zurücksetzen
+        this.reachedTarget = false;
     }
     
     public void resetTarget() {
         this.targetPosition = null;
-        this.reachedTarget = true; // Ziel-Flag zurücksetzen
+        this.reachedTarget = true;
     }
     
     public void shock() {
     	this.targetPosition = null;
-        this.reachedTarget = true; // Ziel-Flag zurücksetzen
+        this.reachedTarget = true;
     }
     
     private void slowDownNearTarget() {

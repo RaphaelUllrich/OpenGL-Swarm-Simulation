@@ -46,7 +46,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         this.width = width;
         this.height = height;
 
-        // Initialize JFrame and Canvas
+        // JFrame und Canvas initialisieren
         JFrame f = new JFrame();
         f.setTitle(title);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -68,7 +68,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
         new Thread(() -> {
             try {
                 Display.setParent(c);
-                Display.setDisplayMode(new DisplayMode(width, height)); // Ensure double buffering is enabled
+                Display.setDisplayMode(new DisplayMode(width, height));
                 Display.create();
                 initGL();
                 blurEffect = new BlurEffect(width, height);
@@ -93,14 +93,14 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 target = null;
                 clickPosition = null;
 
-                // Adding mouse listener to canvas
+                // Mouse-Listener zu Canvas hinzufügen
                 c.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mouseClicked(java.awt.event.MouseEvent e) {
                         int mouseX = e.getX();
                         int mouseY = e.getY();
                         // Transformiere Mauskoordinaten in Weltkoordinaten
                         float worldX = (float) (mouseX / (double) c.getWidth() * 4 - 2);
-                        float worldY = (float) ((c.getHeight() - mouseY) / (double) c.getHeight() * 4 - 2); // Anpassung für Y-Koordinate
+                        float worldY = (float) ((c.getHeight() - mouseY) / (double) c.getHeight() * 4 - 2); 
                         Vektor2D newTarget = new Vektor2D(worldX, -worldY + 1);
                         System.out.println("Mouse Clicked at: " + newTarget.x + ", " + newTarget.y);
                         for (Agent agent : agents) {
@@ -118,7 +118,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             }
         }).start();
 
-        // Create and add a button to reset the target
+        // reset-Button erstellen und hinzufügen
         JButton resetButton = new JButton("Reset Target");
         resetButton.addActionListener(new ActionListener() {
             @Override
@@ -128,7 +128,6 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 for (Agent agent : agents) {
                     agent.resetTarget();
                 }
-                System.out.println("cooool");
             }
         });
         
@@ -141,7 +140,6 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                 for (Agent agent : agents) {
                     agent.shock();
                 }
-                System.out.println("cool");
                 if (!shock) {
                 	shock = true;
                 	shockButton.setText("calm dowm");
@@ -153,7 +151,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             }
         });
 
-        // Add the button to the JFrame
+        // Button zum JFrame hinzufügen
         JPanel panel = new JPanel();
         panel.setBackground(Color.black);
         panel.add(resetButton);
@@ -182,7 +180,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     @Override
     public void renderLoop() {
         long lastTime = System.nanoTime();
-        final double nsPerTick = 1e9 / 60; // 60 ticks per second
+        final double nsPerTick = 1e9 / 60;
         double t = (System.nanoTime() - lastTime) / 1e9;
 
         while (running && !Display.isCloseRequested()) {
@@ -190,7 +188,6 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             double delta = (now - lastTime) / nsPerTick;
             lastTime = now;
 
-            // Update positions with delta time
             POGL.clearBackgroundWithColor(0.15f, 0.15f, 0.15f, 1.0f);
 
             glLoadIdentity();
@@ -206,7 +203,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                     blurEffect.applyBlurEffect(() -> {
                         glPushMatrix();
                         glTranslated(agent.position.x, agent.position.y, 0);
-                        glScaled(0.015, 0.015, 0.015); // Make fireflies smaller
+                        glScaled(0.015, 0.015, 0.015);
                         double red = 1.0;
                         double green = 0.8 + 0.2 * Math.sin(t); // Use current time in seconds
                         double blue = 0.0;
@@ -219,10 +216,8 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
                     blurEffect.applyBlurEffect(() -> {
                         glPushMatrix();
                         glTranslated(agent.position.x, agent.position.y, 0);
-                        glRotatef((float) t * 50.0f, 1.0f, 0.0f, 0.0f); // Rotation um X-Achse
-                        glRotatef((float) t * 30.0f, 0.0f, 1.0f, 0.0f); // Rotation um Y-Achse
-                        glRotatef((float) t * 20.0f, 0.0f, 0.0f, 1.0f); // Rotation um Z-Achse
-                        glScaled(0.01, 0.01, 0.01); // Make fireflies smaller
+                        glRotatef((float) t * 20.0f, 0.0f, 0.0f, 1.0f);
+                        glScaled(0.01, 0.01, 0.01);
                         double red = 1.0;
                         double green = 0.8 + 0.2 * Math.sin(t); // Use current time in seconds
                         double blue = 0.0;
@@ -262,27 +257,23 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             }
 
             Display.update();
-            Display.sync(60); // Limit framerate to 60 FPS
+            Display.sync(60); // framerate auf 60 FPS setzen
         }
 
         Display.destroy();
-        System.exit(0); // Ensure the application exits cleanly
+        System.exit(0);
     }
 
     private void drawTarget(Vektor2D target) {
-        int layers = 10;  // Anzahl der Layer
-        double initialRadius = 0.006;  // Initialer Radius
+        double initialRadius = 0.06;  // Initialer Radius
 
-        for (int i = layers; i > 0; i--) {
-            double alpha = 1.0 / i;  // Alpha-Wert basierend auf dem aktuellen Layer
-
-            glColor4d(1.0, 1.0, 0.0, alpha);  // Setze die Farbe mit Alpha-Wert (Gelb)
+            glColor4d(1.0, 1.0, 0.0, 1);  // Setze die Farbe mit Alpha-Wert (Gelb)
             glPushMatrix();
             glTranslated(target.x, target.y, 0);
-            glScaled(initialRadius * i, initialRadius * i, 1.0);  // Skaliere basierend auf dem aktuellen Layer
+            glScaled(initialRadius, initialRadius, 1.0);  // Skaliere basierend auf dem aktuellen Layer
             drawCircle();  // Zeichne den Kreis
             glPopMatrix();
-        }
+        
     }
 
     private void drawCircle() {
@@ -298,7 +289,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
     }
 
     public static void main(String[] args) {
-        JFrame selectionFrame = new JFrame("Wähle Objekt oder Kugel");
+        JFrame selectionFrame = new JFrame("Wähle obj oder OpenGL");
         selectionFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         selectionFrame.setSize(490, 110);
         selectionFrame.setLocationRelativeTo(null);
@@ -319,7 +310,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectionFrame.dispose();
-                new ObjektLadenUndDrehen("Objekt drehen", 890, 525, "objects/fireflyExtended.obj", 10, false).start();
+                new ObjektLadenUndDrehen("OBJ Glühwürmchen", 890, 525, "objects/fireflyExtended.obj", 10, false).start();
             }
         });
 
@@ -327,7 +318,7 @@ public class ObjektLadenUndDrehen extends LWJGLBasisFenster {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectionFrame.dispose();
-                new ObjektLadenUndDrehen("Kugel drehen", 890, 525, null, 10, true).start();
+                new ObjektLadenUndDrehen("OpenGL Glühwürmchen", 890, 525, null, 10, true).start();
             }
         });
 
