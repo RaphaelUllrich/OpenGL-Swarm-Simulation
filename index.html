@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalender</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icons/icon-192x192.png"/>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {    //serviceworker für caching laden
+          navigator.serviceWorker.register('/serviceworker.js').then(function(registration) {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }, function(error) {
+            console.log('ServiceWorker registration failed: ', error);
+          });
+        });
+      }
+
+      let deferredPrompt;   //speichert install event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();     //Standartverhalten verhindert
+            deferredPrompt = e;
+            const installButton = document.createElement('button');
+            installButton.textContent = 'Installieren';
+            installButton.classList.add('install-button');
+            document.body.appendChild(installButton);
+
+            installButton.addEventListener('click', () => {
+                installButton.remove();
+                deferredPrompt.prompt();    //gespeicherten install prompt ausführen
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Installation wurde angenommen');
+                    } else {
+                        console.log('Installation wurde abgelehnt');
+                    }
+                    deferredPrompt = null; //deferredPrompt auf null setzen um anzuzeigen, dass prompt gehandelt wurde
+                });
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="button r" id="button-9">    
+        <input type="checkbox" class="checkbox" onclick="toggleHeader()"/>
+        <div class="knobs">
+            <span></span>
+        </div>
+        <div class="layer"></div>
+    </div>
+    <header>
+        <div class="header-content">
+            <button type="button" class="reloadbutton" onclick="refreshPage()">reload</button>
+            <p id="currentYear"></p>
+            <select id="yearSelect" onchange="changeYear()"></select>
+        </div>
+    </header>
+    <div class="calendar" id="calendar"></div>
+
+    <div class="popup" id="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closePopup()">&times;</span>
+            <h3 id="holidayName"></h3>
+            <p id="holidayDate"></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

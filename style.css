@@ -1,0 +1,709 @@
+* {
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+*:focus {
+  outline: none;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0%;
+    background-image: linear-gradient(to bottom right, rgb(124, 57, 233), rgb(50, 0, 107));
+}
+
+header {
+  text-align: center;
+  position: sticky;
+  top: 30px;
+  vertical-align: middle;
+  height: 60px;
+  margin-bottom: 30px;
+  margin-top: 30px;
+  margin-left: 300px;
+  margin-right: 300px;
+  font-weight: bold;
+  font-size: xx-large;
+  background-color: rgba(0, 0, 0, 0);
+  padding: 0px;
+  transition: transform 0.5s ease, opacity 0.5s ease, background-color 0.4s ease, backdrop-filter 0.3s; /* Geschwindigkeit und Art der Animation */
+  transform-origin: top;
+  backdrop-filter: blur(0px);
+  box-shadow: inset;
+  box-shadow: 0 0 5px rgba(33,33,33,.2);
+  z-index: 900;
+  border-radius: 60px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Zentriert den Inhalt horizontal */
+  height: 60px;
+}
+
+#currentYear {
+  padding-inline: 4px;
+  border-radius: 5px;
+  color: rgb(255, 255, 255);
+  width: 200px;
+}
+
+#yearSelect {
+  margin-left: 50px; /* Abstand zwischen currentYear und yearSelect */
+  flex-shrink: 0; /* Verhindert das Verkleinern des Dropdown-Menüs */
+  background-color: #ffffff00;
+  color: rgb(255, 255, 255);
+  font-weight: bold;
+  font-size: large;
+  border: none;
+  border-radius: 20px;
+  padding: 7px;
+  transition: background-color .5s, transform 0.5s ease, box-shadow .5s;
+}
+
+#yearSelect:hover {
+  background-color: #ffffff;
+  color: #170031;
+  transform: translateY(-4px);
+  box-shadow: inset;
+  box-shadow: 0 0 21px rgba(33,33,33,.2);
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin: 10px;
+    transition: transform 0.5s ease; /* Geschwindigkeit und Art der Animation */
+    transform-origin: top;
+  }
+
+  .month {
+    border-radius: 10px;
+    border: 1px solid #00000001;
+    padding: 10px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease, background-color .5s;
+    color: white;
+    background-color: #0000000e;
+  }
+
+  .month:hover {
+    background-color: #0000002d;
+    
+  }
+
+  .month.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+  .days {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 5px;
+    color: white;
+  }
+  .day:hover {
+    box-shadow: inset;
+    box-shadow: 0 0 11px rgba(33,33,33,.2); 
+  }
+  .day {
+    transition: box-shadow .2s;
+    border-radius: 5px;
+    border: 1px solid #f0f0f000;
+    padding: 5px;
+  }
+
+  .weekend {
+    color: #bd94ff;
+  }
+
+  .weekday {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .KW {
+    color: #cfcfcf;
+  }
+
+  .calendarWeeks {
+    padding: 5px;
+    color: #cfcfcf;
+    border-right: solid 2px #a04dff;
+  }
+
+  .calendarWeeksOne {
+    padding: 5px;
+    color: #cfcfcf;
+    border-right: solid 2px #a04dff;
+  }
+
+.current-day {
+    background-color: rgb(255, 255, 255);
+    border-radius: 50px;
+    color: black;
+}
+
+.holiday {
+  background-color: rgb(110, 76, 230); 
+  transition: box-shadow .2s;
+}
+
+.holiday:hover {
+  box-shadow: inset;
+  box-shadow: 0 0 28px rgb(108, 57, 250);
+  border: none;
+  cursor: pointer;
+}
+
+.month h2 {
+    font-size: 24px; /* Größe des Monatsnamens, kann angepasst werden */
+    text-align: center;
+    margin: 0;
+    padding-bottom: 30px; /* Fügt Padding unter dem Monatsnamen hinzu */
+    padding-top: 10px;
+}
+
+.reloadbutton {
+  margin-right: 50px; /* Abstand zwischen currentYear und yearSelect */
+  flex-shrink: 0;
+  background-color: #0057b300;
+  font-weight: bold;
+  font-size: large;
+  color: rgb(255, 255, 255);
+  border: none;
+  border-radius: 20px;
+  padding: 7px;
+  transition: transform 0.5s ease, box-shadow .5s, background-color .5s;
+}
+
+.reloadbutton:hover {
+  transform: translateY(-4px);
+  color: #17003b;
+  box-shadow: inset;
+  box-shadow: 0 0 21px rgba(33,33,33,.2);
+  background-color: #ffffff;
+}
+
+header.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.calendar.hidden {
+  transform: translateY(-8.4%);
+}
+
+@keyframes slideIn {
+  from {
+      transform: translateY(100%);
+      opacity: 0;
+  }
+  to {
+      transform: translateY(0);
+      opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+      transform: translateY(0%);
+      opacity: 0;
+  }
+  to {
+      transform: translateY(-100);
+      opacity: 1;
+  }
+}
+
+.letter {
+  display: inline-block;
+  animation: slideIn 0.5s ease-in-out, slideOut 0.5s ease-in-out;
+}
+
+
+.popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+}
+
+.popup-content {
+  padding: 20px;
+}
+
+.popup .close {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.popup .close:hover {
+  color: #f00;
+}
+
+#holidayname {
+  font-weight: 200;
+}
+
+
+/*------toggle button css-------*/
+
+.knobs,
+.layer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.button {
+  position: fixed;
+  top: 50px;
+  left: 20px;
+  width: 54px;
+  height: 26px;
+  margin: -20px auto 0 auto;
+  overflow: hidden;
+  z-index: 1000;
+  transition: transform 0.5s ease; /* Geschwindigkeit und Art der Animation */
+  transform-origin: top;
+}
+
+.button.hidden {
+  transform: translateY(-87%);
+}
+
+.button-9.hidden {
+  transform: translateY(-80%);
+}
+
+.button.r,
+.button.r .layer {
+  border-radius: 100px;
+}
+
+.button.b2 {
+  border-radius: 2px;
+}
+
+.checkbox {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.knobs {
+  z-index: 2;
+}
+
+.layer {
+  width: 100%;
+  background-color: rgb(187, 247, 214);
+  transition: 0.3s ease all;
+  z-index: 1;
+}
+
+/* Button 9 */
+#button-9 .knobs:before,
+#button-9 .knobs:after,
+#button-9 .knobs span {
+  position: absolute;
+  top: 1.5px;
+  width: 15px;
+  height: 5px;
+  font-size: 9px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1;
+  padding: 9px 4px;
+  border-radius: 50%;
+  transition: 0.4s cubic-bezier(0.18, 0.89, 0.35, 1.15) all;
+}
+
+#button-9 .knobs:before {
+  content: "ON";
+  left: 2.4px;
+  top: 0px;
+}
+
+#button-9 .knobs:after {
+  content: "OFF";
+  right: -24px;
+  top: 0px;
+}
+
+#button-9 .knobs:before,
+#button-9 .knobs:after {
+  color: #fff;
+  z-index: 2;
+}
+
+#button-9 .knobs span {
+  left: 3px;
+  background-color: rgb(51, 190, 114);
+  z-index: 1;
+}
+
+#button-9 .checkbox:checked + .knobs:before {
+  left: -24px;
+}
+
+#button-9 .checkbox:checked + .knobs:after {
+  right: 3px;
+}
+
+#button-9 .checkbox:checked + .knobs span {
+  left: 29px;
+  background-color: #709ab6;
+}
+
+#button-9 .checkbox:checked ~ .layer {
+  background-color: #dcdff8;
+}
+
+
+.install-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: background-color 0.3s;
+}
+
+.install-button:hover {
+  background-color: #0056b3;
+}
+
+/*---------------media queries---------------*/
+
+@media (max-width: 1245px) {
+  .calendar {
+      grid-template-columns: repeat(3, 1fr);
+  }
+
+  header {
+      font-size: x-large;
+      height: 60px;
+      margin-bottom: 30px;
+      margin-top: 30px;
+      margin-left: 200px;
+      margin-right: 200px;
+  }
+
+  .header-content {
+    height: 60px;
+  }
+
+  .month {
+      padding: 8px;
+  }
+
+  .day {
+      padding: 4px;
+  }
+
+  #yearSelect {
+      margin-left: 20px;
+  }
+
+  .reloadbutton {
+      margin-right: 20px;
+  }
+  .calendar.hidden {
+    transform: translateY(-6.3%);
+  }
+  .button {
+    top: 46px;
+  }
+  .button.hidden {
+    transform: translateY(-65%);
+  }
+}
+
+/* Anpassungen für Bildschirme bis 800px Breite */
+@media (max-width: 860px) {
+  .calendar {
+      grid-template-columns: repeat(2, 1fr);
+  }
+
+  header {
+    font-size: large;
+    height: 50px;
+    margin-bottom: 30px;
+    margin-top: 30px;
+    margin-left: 100px;
+    margin-right: 100px;
+}
+
+.header-content {
+  height: 50px;
+}
+
+  .month {
+      padding: 6px;
+  }
+
+  .day {
+      padding: 3px;
+  }
+
+  #yearSelect {
+      margin-left: 15px;
+  }
+
+  .reloadbutton {
+      margin-right: 15px;
+  }
+  .calendar.hidden {
+    transform: translateY(-3%);
+  }
+  .button {
+    top: 50px;
+  }
+  #currentYear {
+    font-size: larger;
+  }
+  .button.hidden {
+    transform: translateY(-40%);
+  }
+}
+
+/* Anpassungen für Bildschirme bis 640px Breite */
+@media (max-width: 600px) {
+  .calendar {
+      grid-template-columns: repeat(1, 1fr);
+  }
+
+  header {
+    font-size: medium;
+    padding-left: 5px;
+    padding-right: 5px;
+    height: 45px;
+    margin-bottom: 30px;
+    margin-top: 30px;
+    margin-left: 100px;
+    margin-right: 100px;
+}
+
+.header-content {
+  height: 45px;
+}
+
+  .month {
+      padding: 5px;
+  }
+
+  .day {
+      padding: 2px;
+  }
+
+  #yearSelect {
+      margin-left: 10px;
+  }
+
+  .reloadbutton {
+      margin-right: 10px;
+  }
+  .calendar.hidden {
+    transform: translateY(-1.2%);
+  }
+  #currentYear {
+    font-size: larger;
+  }
+  .button {
+    top: 48px;
+    left: 10px;
+    width: 34px;
+    height: 16px;
+    margin: -20px auto 0 auto;
+  }
+  .button.hidden {
+    transform: translateY(-70%);
+  }
+  .calendar.hidden {
+    transform: translateY(-1.6%);
+  }
+  #button-9 .knobs:before {
+    content: "";
+  }
+  
+  #button-9 .knobs:after {
+    content: "";
+  }
+
+  #button-9 .knobs:before,
+  #button-9 .knobs:after,
+  #button-9 .knobs span {
+    top: 1.6px;
+    width: 5px;
+    padding: 4px 4px;
+  }
+
+  #button-9 .checkbox:checked + .knobs span {
+    left: 19px;
+  }
+}
+
+/* Anpassungen für Bildschirme bis 550px Breite */
+@media (max-width: 500px) {
+  .calendar {
+      grid-template-columns: 1fr;
+  }
+  .calendar.hidden {
+    transform: translateY(-1.1%);
+}
+
+  header {
+    font-size: small;
+    top: 20px;
+    padding: 5px;
+    height: 35px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    margin-left: 80px;
+    margin-right: 80px;
+}
+
+.header-content {
+  height: 35px;
+}
+
+  .month {
+      padding: 4px;
+  }
+
+  .day {
+      padding: 1px;
+  }
+
+  #yearSelect {
+      margin-left: 10px;
+      font-size: small;
+  }
+
+  .reloadbutton {
+      margin-right: 10px;
+      font-size: small;
+  }
+  #currentYear {
+    font-size: large;
+  }
+  .button {
+    top: 41px;
+    left: 10px;
+    width: 34px;
+    height: 16px;
+    margin: -20px auto 0 auto;
+  }
+  #button-9 .knobs:before {
+    content: "";
+  }
+  
+  #button-9 .knobs:after {
+    content: "";
+  }
+
+  #button-9 .knobs:before,
+  #button-9 .knobs:after,
+  #button-9 .knobs span {
+    top: 1.9px;
+    width: 5px;
+    padding: 4px 4px;
+  }
+
+  #button-9 .checkbox:checked + .knobs span {
+    left: 19px;
+  }
+
+  .button.hidden {
+    transform: translateY(-40%);
+  }
+  #yearSelect:hover {
+    background-color: #ffffff;
+    transform: translateY(0);
+    box-shadow: inset;
+    box-shadow: 0 0 21px rgba(33,33,33,.2);
+    border-radius: 40px;
+  }
+  .reloadbutton:hover {
+    transform: translateY(0);
+    box-shadow: inset;
+    box-shadow: 0 0 21px rgba(33,33,33,.2);
+    background-color: #ffffff;
+    border-radius: 40px;
+  }
+}
+
+
+
+@media (max-width: 370px) {
+  header {
+    font-size: small;
+    padding: 5px;
+    height: 30px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    margin-left: 50px;
+    margin-right: 50px;
+  }
+
+  .header-content {
+    height: 30px;
+  }
+  .button {
+    top: 39px;
+    left: 10px;
+    width: 34px;
+    height: 16px;
+    margin: -20px auto 0 auto;
+  }
+  .calendar.hidden {
+    transform: translateY(-1.2%);
+  }
+  .button.hidden {
+    transform: translateY(-30%);
+  }
+
+  #yearSelect:hover {
+    background-color: #ffffff;
+    transform: translateY(0);
+    box-shadow: inset;
+    box-shadow: 0 0 21px rgba(33,33,33,.2);
+    border-radius: 40px;
+  }
+  .reloadbutton:hover {
+    transform: translateY(0);
+    box-shadow: inset;
+    box-shadow: 0 0 21px rgba(33,33,33,.2);
+    background-color: #ffffff;
+    border-radius: 40px;
+  }
+}
